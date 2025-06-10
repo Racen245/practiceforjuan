@@ -1,0 +1,28 @@
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    padding: 40px;
+}
+.verb-card {
+    font-size: 48px;
+    margin-bottom: 20px;
+    font-weight: bold;
+}
+input {
+    padding: 10px;
+    font-size: 16px;
+    margin-bottom: 5px;
+    width: 400px; /* Adjust width for longer sentences */
+}
+button {
+    padding: 10px 16px;
+    font-size: 16px;
+    margin-left: 10px;
+    cursor: pointer;
+}
+.feedback {
+    display: block;
+    margin-top: 10px;
+    font-size: 20px;
+    font-weight: bold;
+}
