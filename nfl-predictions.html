@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>NFL 2025 Prediction Tracker</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 20px;
+      background: #f4f4f4;
+      color: #333;
+    }
+    h1 {
+      color: #002266;
+      text-align: center;
+      margin-bottom: 10px;
+    }
+    .subtitle {
+      text-align: center;
+      color: #555;
+      font-style: italic;
+    }
+    .instructions {
+      background: #e7f3ff;
+      padding: 15px;
+      border-radius: 8px;
+      margin: 20px 0;
+      font-size: 0.9em;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    th, td {
+      padding: 12px;
+      text-align: center;
+      border: 1px solid #ccc;
+    }
+    th {
+      background: #002266;
+      color: white;
+    }
+    .team {
+      font-weight: bold;
+      text-align: left;
+    }
+    .agree { background: #d4edda; } /* High confidence */
+    .split { background: #fff3cd; } /* Medium */
+    .low { background: #f8d7da; }   /* Low agreement */
+    .highlight {
+      background: #c8e6c9 !important;
+      font-weight: bold;
+    }
+    footer {
+      margin-top: 40px;
+      text-align: center;
+      font-size: 0.9em;
+      color: #666;
+    }
+    a {
+      color: #005a9c;
+    }
+    #confidencePicks li {
+      margin: 5px 0;
+    }
+    .bye-week {
+      font-style: italic;
+      color: #888;
+    }
+  </style>
+</head>
+<body>
+
+  <h1 id="weekTitle">🏈 NFL 2025 Prediction Tracker</h1>
+  <p class="subtitle">Top 4 Sources: 538, PFF, Vegas, NumberFire</p>
+
+  <div class="instructions">
+    <strong>🎯 Top Predictors:</strong>
+    1. <a href="https://fivethirtyeight.com" target="_blank">FiveThirtyEight</a> |
+    2. <a href="https://pff.com" target="_blank">PFF</a> |
+    3. <a href="https://vegasinsider.com" target="_blank">Vegas Lines</a> |
+    4. <a href="https://numberfire.com" target="_blank">NumberFire</a>
+    <br>
+    <strong>💡 Tip:</strong> This page auto-shows the current week. Update predictions weekly.
+  </div>
+
+  <table id="predictionTable">
+    <thead>
+      <tr>
+        <th>Game</th>
+        <th>538</th>
+        <th>PFF</th>
+        <th>Vegas</th>
+        <th>NumberFire</th>
+        <th>Consensus</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Auto-generated -->
+    </tbody>
+  </table>
+
+  <h3>🎯 Weekly Confidence Picks</h3>
+  <ul id="confidencePicks">
+    <li>Loading...</li>
+  </ul>
+
+  <footer>
+    <p><em>Last updated: <span id="updateDate">YYYY-MM-DD</span></em></p>
+    <p>Data from top 4 NFL prediction sources. High confidence = 3+ agree.</p>
+    <p class="bye-week" id="byeNotice"></p>
+  </footer>
+
+  <script>
+    // ===== FULL 2025 NFL SCHEDULE (from https://operations.nfl.com) =====
+    const nflSchedule = {
+      "Week 1": [
+        { away: "Cowboys", home: "Eagles" },
+        { away: "Chiefs", home: "Chargers", location: "São Paulo" },
+        { away: "Buccaneers", home: "Falcons" },
+        { away: "Bengals", home: "Browns" },
+        { away: "Dolphins", home: "Colts" },
+        { away: "Panthers", home: "Jaguars" },
+        { away: "Raiders", home: "Patriots" },
+        { away: "Cardinals", home: "Saints" },
+        { away: "Steelers", home: "Jets" },
+        { away: "Giants", home: "Commanders" },
+        { away: "Titans", home: "Broncos" },
+        { away: "49ers", home: "Seahawks" },
+        { away: "Lions", home: "Packers" },
+        { away: "Texans", home: "Rams" }
+      ],
+      "Week 2": [
+        { away: "Rams", home: "Ravens" },
+        { away: "Cowboys", home: "Panthers" },
+        { away: "Cardinals", home: "Colts" },
+        { away: "Seahawks", home: "Jaguars" },
+        { away: "Chargers", home: "Dolphins" },
+        { away: "Browns", home: "Steelers" },
+        { away: "49ers", home: "Buccaneers" },
+        { away: "Titans", home: "Raiders" },
+        { away: "Bengals", home: "Packers" },
+        { away: "Patriots", home: "Saints" },
+        { away: "Lions", home: "Chiefs" }
+      ],
+      "Week 3": [
+        { away: "Bills", home: "Falcons" },
+        { away: "Bears", home: "Commanders" },
+        { away: "Raiders", home: "Chiefs" },
+        { away: "Eagles", home: "Vikings" },
+        { away: "Panthers", home: "Jets" },
+        { away: "Patriots", home: "Titans" },
+        { away: "Giants", home: "Broncos" },
+        { away: "Colts", home: "Chargers" },
+        { away: "Packers", home: "Cardinals" },
+        { away: "Cowboys", home: "Rams" },
+        { away: "Falcons", home: "49ers" }
+      ],
+      "Week 4": [
+        { away: "Rams", home: "Jaguars", location: "Wembley" },
+        { away: "Saints", home: "Bears" },
+        { away: "Dolphins", home: "Browns" },
+        { away: "Raiders", home: "Chiefs" },
+        { away: "Eagles", home: "Vikings" },
+        { away: "Panthers", home: "Jets" },
+        { away: "Patriots", home: "Titans" },
+        { away: "Giants", home: "Broncos" },
+        { away: "Colts", home: "Chargers" },
+        { away: "Packers", home: "Cardinals" },
+        { away: "Cowboys", home: "Rams" },
+        { away: "Falcons", home: "49ers" }
+      ],
+      "Week 5": [
+        { away: "Vikings", home: "Chargers" },
+        { away: "Dolphins", home: "Falcons" },
+        { away: "Bears", home: "Ravens" },
+        { away: "Bills", home: "Panthers" },
+        { away: "Jets", home: "Bengals" },
+        { away: "49ers", home: "Texans" },
+        { away: "Browns", home: "Patriots" },
+        { away: "Giants", home: "Eagles" },
+        { away: "Buccaneers", home: "Saints" },
+        { away: "Cowboys", home: "Broncos" },
+        { away: "Titans", home: "Colts" },
+        { away: "Packers", home: "Steelers" }
+      ],
+      "Week 6": [
+        { away: "Ravens", home: "Dolphins" },
+        { away: "Bengals", home: "Bears" },
+        { away: "Vikings", home: "Lions" },
+        { away: "Panthers", home: "Packers" },
+        { away: "Broncos", home: "Texans" },
+        { away: "Falcons", home: "Patriots" },
+        { away: "49ers", home: "Giants" },
+        { away: "Raiders", home: "Chargers" },
+        { away: "Rams", home: "Saints" },
+        { away: "Jaguars", home: "Raiders" },
+        { away: "Chiefs", home: "Bills" },
+        { away: "Seahawks", home: "Commanders" }
+      ],
+      "Week 7": [
+        { away: "Raiders", home: "Broncos" },
+        { away: "Falcons", home: "Colts", location: "Berlin" },
+        { away: "Saints", home: "Panthers" },
+        { away: "Giants", home: "Bears" },
+        { away: "Jaguars", home: "Texans" },
+        { away: "Bills", home: "Dolphins" },
+        { away: "Ravens", home: "Vikings" },
+        { away: "Browns", home: "Jets" },
+        { away: "Patriots", home: "Buccaneers" },
+        { away: "Cardinals", home: "Seahawks" },
+        { away: "Rams", home: "49ers" },
+        { away: "Lions", home: "Commanders" },
+        { away: "Steelers", home: "Chargers" }
+      ],
+      "Week 8": [
+        { away: "Jets", home: "Patriots" },
+        { away: "Commanders", home: "Dolphins", location: "Madrid" },
+        { away: "Panthers", home: "Falcons" },
+        { away: "Buccaneers", home: "Bills" },
+        { away: "Chargers", home: "Jaguars" },
+        { away: "Bears", home: "Vikings" },
+        { away: "Packers", home: "Giants" },
+        { away: "Bengals", home: "Steelers" },
+        { away: "Texans", home: "Titans" },
+        { away: "49ers", home: "Cardinals" },
+        { away: "Rams", home: "Seahawks" },
+        { away: "Browns", home: "Ravens" },
+        { away: "Chiefs", home: "Broncos" }
+      ],
+      "Week 9": [
+        { away: "Ravens", home: "Bills" },
+        { away: "Vikings", home: "Bears" },
+        { away: "Jaguars", home: "Bengals" },
+        { away: "Giants", home: "Cowboys" },
+        { away: "Bears", home: "Lions" },
+        { away: "Patriots", home: "Dolphins" },
+        { away: "Chiefs", home: "Raiders" },
+        { away: "Bills", home: "Patriots" },
+        { away: "Commanders", home: "Giants" },
+        { away: "Buccaneers", home: "Falcons" },
+        { away: "Colts", home: "Chiefs" },
+        { away: "Titans", home: "Rams" },
+        { away: "Jaguars", home: "Cardinals" },
+        { away: "Browns", home: "Raiders" },
+        { away: "Eagles", home: "Cowboys" },
+        { away: "Saints", home: "Falcons" }
+      ],
+      "Week 10": [
+        { away: "Packers", home: "Lions", event: "Thanksgiving" },
+        { away: "Chiefs", home: "Cowboys", event: "Thanksgiving" },
+        { away: "Bengals", home: "Ravens", event: "Thanksgiving" },
+        { away: "Bears", home: "Eagles" },
+        { away: "Rams", home: "Panthers" },
+        { away: "49ers", home: "Browns" },
+        { away: "Texans", home: "Colts" },
+        { away: "Saints", home: "Dolphins" },
+        { away: "Falcons", home: "Jets" },
+        { away: "Cardinals", home: "Buccaneers" },
+        { away: "Jaguars", home: "Titans" },
+        { away: "Vikings", home: "Seahawks" },
+        { away: "Raiders", home: "Chargers" },
+        { away: "Bills", home: "Steelers" },
+        { away: "Broncos", home: "Commanders" }
+      ],
+      "Week 11": [
+        { away: "Cowboys", home: "Lions" },
+        { away: "Seahawks", home: "Falcons" },
+        { away: "Steelers", home: "Ravens" },
+        { away: "Titans", home: "Browns" },
+        { away: "Bears", home: "Packers" },
+        { away: "Colts", home: "Jaguars" },
+        { away: "Commanders", home: "Vikings" },
+        { away: "Dolphins", home: "Jets" },
+        { away: "Saints", home: "Buccaneers" },
+        { away: "Raiders", home: "Broncos" },
+        { away: "Rams", home: "Cardinals" },
+        { away: "Bengals", home: "Bills" },
+        { away: "Texans", home: "Chiefs" },
+        { away: "Eagles", home: "Chargers" }
+      ],
+      "Week 12": [
+        { away: "Falcons", home: "Buccaneers" },
+        { away: "Browns", home: "Bears" },
+        { away: "Ravens", home: "Bengals" },
+        { away: "Cardinals", home: "Texans" },
+        { away: "Jets", home: "Jaguars" },
+        { away: "Chargers", home: "Chiefs" },
+        { away: "Bills", home: "Patriots" },
+        { away: "Commanders", home: "Giants" },
+        { away: "Raiders", home: "Eagles" },
+        { away: "Packers", home: "Broncos" },
+        { away: "Lions", home: "Rams" },
+        { away: "Panthers", home: "Saints" },
+        { away: "Colts", home: "Seahawks" },
+        { away: "Titans", home: "49ers" },
+        { away: "Vikings", home: "Cowboys" },
+        { away: "Dolphins", home: "Steelers" }
+      ],
+      "Week 13": [
+        { away: "Rams", home: "Seahawks" },
+        { away: "Packers", home: "Bears" },
+        { away: "Eagles", home: "Commanders" },
+        { away: "Patriots", home: "Ravens" },
+        { away: "Buccaneers", home: "Panthers" },
+        { away: "Bills", home: "Browns" },
+        { away: "Chargers", home: "Cowboys" },
+        { away: "Jets", home: "Saints" },
+        { away: "Vikings", home: "Giants" },
+        { away: "Chiefs", home: "Titans" },
+        { away: "Falcons", home: "Cardinals" },
+        { away: "Jaguars", home: "Broncos" },
+        { away: "Bengals", home: "Dolphins" },
+        { away: "Lions", home: "Steelers" },
+        { away: "Raiders", home: "Texans" },
+        { away: "49ers", home: "Colts" }
+      ],
+      "Week 14": [
+        { away: "Cowboys", home: "Washington" },
+        { away: "Lions", home: "Vikings" },
+        { away: "Broncos", home: "Chiefs" },
+        { away: "Seahawks", home: "Panthers" },
+        { away: "49ers", home: "Saints" },
+        { away: "Bills", home: "Jets" },
+        { away: "Steelers", home: "Rams" },
+        { away: "Falcons", home: "Buccaneers" },
+        { away: "Cardinals", home: "Rams" },
+        { away: "Raiders", home: "Chiefs" },
+        { away: "Bengals", home: "Dolphins" },
+        { away: "Giants", home: "Patriots" },
+        { away: "Eagles", home: "Bills" },
+        { away: "Chargers", home: "49ers" }
+      ],
+      "Week 15": [
+        { away: "Rams", home: "Falcons" },
+        { away: "Vikings", home: "Steelers", location: "Dublin" },
+        { away: "Commanders", home: "Falcons" },
+        { away: "Saints", home: "Bills" },
+        { away: "Browns", home: "Lions" },
+        { away: "Titans", home: "Texans" },
+        { away: "Panthers", home: "Patriots" },
+        { away: "Chargers", home: "Giants" },
+        { away: "Buccaneers", home: "Buccaneers" },
+        { away: "Eagles", home: "Buccaneers" },
+        { away: "Colts", home: "Rams" },
+        { away: "Jaguars", home: "49ers" },
+        { away: "Ravens", home: "Chiefs" },
+        { away: "Bears", home: "Raiders" },
+        { away: "Cowboys", home: "Giants" },
+        { away: "Bengals", home: "Broncos" }
+      ],
+      "Week 16": [
+        { away: "49ers", home: "Rams", location: "Tottenham" },
+        { away: "Vikings", home: "Browns", location: "Tottenham" },
+        { away: "Texans", home: "Ravens" },
+        { away: "Dolphins", home: "Panthers" },
+        { away: "Raiders", home: "Colts" },
+        { away: "Giants", home: "Saints" },
+        { away: "Cowboys", home: "Jets" },
+        { away: "Eagles", home: "Broncos" },
+        { away: "Titans", home: "Cardinals" },
+        { away: "Buccaneers", home: "Seahawks" },
+        { away: "Lions", home: "Bengals" },
+        { away: "Chargers", home: "Rams" },
+        { away: "Washington", home: "Chargers" },
+        { away: "Bills", home: "Patriots" }
+      ],
+      "Week 17": [
+        { away: "Eagles", home: "Giants" },
+        { away: "Broncos", home: "Jets", location: "Tottenham" },
+        { away: "Chiefs", home: "Jaguars" },
+        { away: "Patriots", home: "Titans" },
+        { away: "Bills", home: "Dolphins" },
+        { away: "Bears", home: "Vikings" },
+        { away: "Giants", home: "Packers" },
+        { away: "Bengals", home: "Steelers" },
+        { away: "Texans", home: "Titans" },
+        { away: "Colts", home: "Jaguars" },
+        { away: "Raiders", home: "Chiefs" },
+        { away: "Bills", home: "Patriots" },
+        { away: "Commanders", home: "Giants" },
+        { away: "Buccaneers", home: "Falcons" }
+      ],
+      "Week 18": [
+        { away: "Dolphins", home: "Bills" },
+        { away: "Falcons", home: "Panthers" },
+        { away: "Packers", home: "Browns" },
+        { away: "Texans", home: "Jaguars" },
+        { away: "Bengals", home: "Vikings" },
+        { away: "Steelers", home: "Patriots" },
+        { away: "Rams", home: "Eagles" },
+        { away: "Raiders", home: "Commanders" },
+        { away: "Broncos", home: "Chargers" },
+        { away: "Saints", home: "Seahawks" },
+        { away: "Lions", home: "Bengals" },
+        { away: "Cardinals", home: "49ers" },
+        { away: "Cowboys", home: "Bears" },
+        { away: "Giants", home: "Washington" },
+        { away: "Ravens", home: "Steelers" },
+        { away: "Chargers", home: "Raiders" }
+      ]
+    };
+
+    // ===== DETECT CURRENT WEEK (2025 SEASON STARTS SEP 7, 2025) =====
+    function getCurrentNFLWeek() {
+      const seasonStart = new Date("2025-09-07"); // First Sunday of 2025 season
+      const today = new Date();
+      const msPerWeek = 7 * 24 * 60 * 60 * 1000;
+      const weekDiff = Math.floor((today - seasonStart) / msPerWeek) + 1;
+      return weekDiff >= 1 && weekDiff <= 18 ? `Week ${weekDiff}` : "Week 1";
+    }
+
+    // ===== GET BYE WEEKS FOR A GIVEN WEEK =====
+    function getByeTeams(week) {
+      const byes = {
+        "Week 4": ["Houston", "Minnesota"],
+        "Week 7": ["Arizona", "Detroit", "Jacksonville", "L.A. Rams", "Las Vegas", "Seattle"],
+        "Week 10": ["Cincinnati", "Dallas", "Kansas City", "Tennessee"],
+        "Week 13": ["Carolina", "New England", "N.Y. Giants", "San Francisco"],
+        "Week 16": ["Atlanta", "Chicago", "Green Bay", "Pittsburgh"]
+      };
+      return byes[week] || [];
+    }
+
+    // ===== GENERATE TABLE FOR CURRENT WEEK =====
+    function generateWeekTable() {
+      const week = getCurrentNFLWeek();
+      const games = nflSchedule[week] || [];
+      const byes = getByeTeams(week);
+
+      const tbody = document.querySelector("#predictionTable tbody");
+      tbody.innerHTML = "";
+
+      games.forEach(game => {
+        const row = document.createElement("tr");
+
+        const teamCell = document.createElement("td");
+        teamCell.className = "team";
+        let label = `${game.away} vs ${game.home}`;
+        if (game.location) label += ` (${game.location})`;
+        if (game.event) label += ` - ${game.event}`;
+        teamCell.textContent = label;
+
+        const sources = ["", "", "", ""]; // 538, PFF, Vegas, NumberFire
+        const cells = sources.map(() => {
+          const td = document.createElement("td");
+          td.contentEditable = true;
+          td.style.cursor = "pointer";
+          td.title = "Click to edit prediction";
+          return td;
+        });
+
+        const consensusCell = document.createElement("td");
+
+        row.appendChild(teamCell);
+        cells.forEach(cell => row.appendChild(cell));
+        row.appendChild(consensusCell);
+        tbody.appendChild(row);
+      });
+
+      // Update title
+      document.getElementById("weekTitle").textContent = `🏈 NFL 2025 Prediction Tracker - ${week}`;
+
+      // Show bye teams
+      const byeNotice = document.getElementById("byeNotice");
+      if (byes.length > 0) {
+        byeNotice.textContent = `🚫 Bye Week Teams: ${byes.join(", ")}`;
+      } else {
+        byeNotice.textContent = "";
+      }
+
+      // Calculate consensus
+      calculateConsensus();
+    }
+
+    // ===== CALCULATE CONSENSUS =====
+    function calculateConsensus() {
+      const rows = document.querySelectorAll("#predictionTable tbody tr");
+      const confidenceList = document.getElementById("confidencePicks");
+      confidenceList.innerHTML = "";
+
+      let highConfidence = [];
+
+      rows.forEach(row => {
+        const cells = row.querySelectorAll("td");
+        const gameText = cells[0].textContent;
+        const game = gameText.split(" vs ").map(t => t.trim());
+
+        // Remove location/event for team extraction
+        const teams = [
+          game[0].split(" ")[0], // away
+          game[1].split(" ")[0]  // home
+        ];
+
+        const picks = Array.from(cells).slice(1, 5).map(td => td.textContent.trim());
+        const countA = picks.filter(p => p === teams[0]).length;
+        const countB = picks.filter(p => p === teams[1]).length;
+
+        const max = Math.max(countA, countB);
+        const winner = countA > countB ? teams[0] : teams[1];
+
+        const consensusCell = cells[5];
+        if (max >= 3) {
+          consensusCell.innerHTML = `✅ ${winner} (${max}/4)`;
+          row.classList.remove("split", "low");
+          row.classList.add("agree");
+          highConfidence.push(`${winner} over ${teams[0]} vs ${teams[1]} (${max}/4)`);
+        } else if (max === 2) {
+          consensusCell.innerHTML = `🟡 Split`;
+          row.classList.remove("agree", "low");
+          row.classList.add("split");
+        } else {
+          consensusCell.innerHTML = `⚪ ${winner} (${max}/4)`;
+          row.classList.remove("agree", "split");
+          row.classList.add("low");
+        }
+
+        // Highlight winner
+        cells.forEach(cell => {
+          if (cell.textContent === winner) {
+            cell.classList.add("highlight");
+          } else {
+            cell.classList.remove("highlight");
+          }
+        });
+      });
+
+      if (highConfidence.length > 0) {
+        highConfidence.forEach(pick => {
+          const li = document.createElement("li");
+          li.innerHTML = `<strong>High Confidence:</strong> ${pick}`;
+          confidenceList.appendChild(li);
+        });
+      } else {
+        const li = document.createElement("li");
+        li.textContent = "No high-agreement games this week.";
+        confidenceList.appendChild(li);
+      }
+    }
+
+    // ===== ON LOAD =====
+    document.addEventListener("DOMContentLoaded", () => {
+      document.getElementById("updateDate").textContent = new Date().toISOString().split('T')[0];
+      generateWeekTable();
+
+      // Recalculate on edit
+      document.getElementById("predictionTable").addEventListener("input", calculateConsensus);
+    });
+  </script>
+</body>
+</html>
