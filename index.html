@@ -54,7 +54,8 @@
       background: #f5f5f5;
       padding: 10px;
       border-radius: 8px;
-      display: none; /* Hidden by default—remove if you want to show hints */
+      /* Keep hidden by default—remove if you want to show hints */
+      display: none; 
     }
     #nextBtn {
       margin-top: 20px;
@@ -95,7 +96,7 @@
     { word: "lights", sentence: "Many people decorate their houses with lights." },
     { word: "place", sentence: "My house is my favorite place to celebrate my birthday." },
     { word: "playlist", sentence: "I have a playlist for our Christmas dinner." },
-    { word: "snacks", sentence: "I will buy the snacks for the party." },
+    { word: "snacks", sentence: "I can buy the snacks for the party." }, // Corrected sentence
     { word: "social media", sentence: "I am going to post pictures of my birthday party on social media." },
     { word: "takeout", sentence: "We are going to order a takeout for Christmas dinner." }
   ];
@@ -107,6 +108,20 @@
   const micBtn = document.getElementById("micBtn");
   const feedbackEl = document.getElementById("feedback");
   const nextBtn = document.getElementById("nextBtn");
+  
+  // 🔑 FIX: Function to normalize text for reliable comparison
+  function normalizeText(text) {
+    // 1. Convert to lowercase
+    let normalized = text.toLowerCase();
+    
+    // 2. Remove common punctuation (.,!? etc.)
+    normalized = normalized.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"");
+    
+    // 3. Replace multiple spaces with single space and trim
+    normalized = normalized.replace(/\s{2,}/g," ").trim();
+    
+    return normalized;
+  }
 
   // Initialize first word
   updateDisplay();
@@ -136,11 +151,16 @@
     });
 
     recognition.onresult = (event) => {
-      const spokenText = event.results[0][0].transcript.toLowerCase().trim();
-      const currentWord = items[currentIndex].word.toLowerCase();
+      // Get the spoken text and normalize it
+      const spokenText = event.results[0][0].transcript;
+      const normalizedSpoken = normalizeText(spokenText);
+      
+      // Get the correct sentence and normalize it
+      const correctSentence = items[currentIndex].sentence;
+      const normalizedCorrect = normalizeText(correctSentence);
 
-      // Normalize "guest list" and "social media" as multi-word keys
-      const isCorrect = spokenText.includes(currentWord);
+      // 🔑 FIX: Compare the full, normalized sentences
+      const isCorrect = normalizedSpoken === normalizedCorrect;
 
       if (isCorrect) {
         feedbackEl.textContent = "Very good! 🎉";
