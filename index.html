@@ -126,7 +126,7 @@
   const micBtn = document.getElementById("micBtn");
   const feedbackEl = document.getElementById("feedback");
   const nextBtn = document.getElementById("nextBtn");
-  const exampleSentenceEl = document.getElementById("exampleSentence"); // Reference to the new hint box
+  const exampleSentenceEl = document.getElementById("exampleSentence"); 
   
   // Function to normalize text for reliable comparison
   function normalizeText(text) {
@@ -166,7 +166,7 @@
     micBtn.addEventListener("click", () => {
       feedbackEl.textContent = "🎙️ Escuchando... (Listening...)";
       feedbackEl.style.color = "#333";
-      exampleSentenceEl.style.display = "none"; // Hide hint box when trying again
+      // IMPORTANT: DO NOT HIDE exampleSentenceEl here. It remains visible until correct.
       recognition.start();
     });
 
@@ -186,14 +186,14 @@
         feedbackEl.textContent = "¡Muy bien! (Very good!) 🎉";
         feedbackEl.style.color = "green";
         nextBtn.style.display = "inline-block";
-        exampleSentenceEl.style.display = "none"; // Ensure hint is hidden on correct answer
+        exampleSentenceEl.style.display = "none"; // HIDE hint on correct answer
       } else {
         feedbackEl.textContent = `Inténtalo de nuevo (Try again)! ❌`;
         feedbackEl.style.color = "red";
         
-        // --- NEW LOGIC: SHOW CORRECT TRANSLATION ---
+        // --- LOGIC: SHOW CORRECT TRANSLATION AND KEEP IT VISIBLE ---
         exampleSentenceEl.textContent = `Traducción correcta: ${correctSentence}`;
-        exampleSentenceEl.style.display = "block"; 
+        exampleSentenceEl.style.display = "block"; // SHOW hint on incorrect answer
         // ------------------------------------------
       }
     };
