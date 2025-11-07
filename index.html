@@ -3,29 +3,30 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Party Vocabulary Speaking Practice</title>
+  <title>Spanish to English Speaking Practice</title>
   <style>
     body {
       font-family: 'Comic Sans MS', cursive, sans-serif;
       text-align: center;
       margin: 0;
       padding: 20px;
-      background: #fff9c4;
+      background: #c8e6c9; /* Light green background for New Year theme */
       color: #333;
     }
     #container {
-      max-width: 600px;
+      max-width: 800px;
       margin: 0 auto;
       padding: 20px;
     }
     #wordBox {
-      font-size: 48px;
+      /* Adjusted font size for displaying full sentences */
+      font-size: 24px; 
       padding: 25px;
       margin: 20px auto;
       width: 90%;
-      max-width: 400px;
+      max-width: 650px; /* Wider box for sentences */
       background: white;
-      border: 4px solid #ff9800;
+      border: 4px solid #388e3c; /* Darker green border */
       border-radius: 15px;
       box-shadow: 0 6px 12px rgba(0,0,0,0.15);
       font-weight: bold;
@@ -33,7 +34,7 @@
     #micBtn {
       font-size: 60px;
       cursor: pointer;
-      color: #e91e63;
+      color: #1976d2; /* Blue microphone */
       margin: 20px;
       transition: transform 0.2s;
     }
@@ -47,14 +48,7 @@
       font-weight: bold;
     }
     #exampleSentence {
-      font-size: 18px;
-      margin: 15px;
-      color: #555;
-      font-style: italic;
-      background: #f5f5f5;
-      padding: 10px;
-      border-radius: 8px;
-      /* Keep hidden by default—remove if you want to show hints */
+      /* Kept hidden, as per original code */
       display: none; 
     }
     #nextBtn {
@@ -71,51 +65,67 @@
     #nextBtn:hover {
       background: #45a049;
     }
+    #instruction {
+        font-size: 18px;
+        margin-bottom: 10px;
+        color: #00897b; /* Teal color for instruction */
+        font-weight: bold;
+    }
   </style>
 </head>
 <body>
 
 <div id="container">
-  <h1>🎉 Say the Sentence!</h1>
-  <div id="wordBox">date</div>
-  <div id="exampleSentence">Example: "My birthday is a very special date."</div>
+  <div id="instruction">Translate the Spanish phrase below to English:</div>
+  <div id="wordBox"></div>
+  <div id="exampleSentence"></div> 
   <div id="micBtn">🎤</div>
   <div id="feedback"></div>
-  <button id="nextBtn">Next Word →</button>
+  <button id="nextBtn">Siguiente Frase →</button>
 </div>
 
 <script>
-  // Word list and matching sentences
+  // New list of Spanish phrases and their exact English translation targets
   const items = [
-    { word: "date", sentence: "My birthday is a very special date." },
-    { word: "decorations", sentence: "I am going to buy decorations for Halloween." },
-    { word: "DJ", sentence: "I am going to hire a DJ for my birthday party." },
-    { word: "fun", sentence: "My friend’s party was a lot of fun." },
-    { word: "guest list", sentence: "I have a guest list for our Christmas celebration." },
-    { word: "invitations", sentence: "These are my invitations for my birthday party." },
-    { word: "lights", sentence: "Many people decorate their houses with lights." },
-    { word: "place", sentence: "My house is my favorite place to celebrate my birthday." },
-    { word: "playlist", sentence: "I have a playlist for our Christmas dinner." },
-    { word: "snacks", sentence: "I can buy the snacks for the party." }, // Corrected sentence
-    { word: "social media", sentence: "I am going to post pictures of my birthday party on social media." },
-    { word: "takeout", sentence: "We are going to order a takeout for Christmas dinner." }
+    { spanish: "Planes de Año Nuevo", english: "New Year’s plans" },
+    { spanish: "La Nochevieja / El fin de año es una fecha muy especial.", english: "New Year’s Eve is a very special date." },
+    { spanish: "Vamos a visitar a mis abuelos.", english: "We are going to visit my grandparents." },
+    { spanish: "La casa de mis abuelos es un lugar especial.", english: "My grandparents’ house is a special place." },
+    { spanish: "Van a enviar invitaciones a todos.", english: "They are going to send invitations to everybody." },
+    { spanish: "La casa de mis abuelos tendrá unas decoraciones hermosas.", english: "My grandparents’ house will have some beautiful decorations." },
+    { spanish: "También usarán luces para decorar la casa.", english: "They will use lights to decorate the house, too." },
+    { spanish: "En su casa, tendremos algunos bocadillos / aperitivos.", english: "At their house, we will have some snacks." },
+    { spanish: "Vamos a reunirnos en la sala de estar / el salón.", english: "We are going to gather in the living room." },
+    { spanish: "Vamos a jugar algunos juegos y a compartir historias.", english: "We are going to play some games and share stories." },
+    { spanish: "Los juegos familiares son muy divertidos.", english: "Family games are a lot of fun." },
+    { spanish: "Voy a hacer una lista de reproducción para Nochevieja.", english: "I am going to make a playlist for New Year’s Eve." },
+    { spanish: "Cenaremos alrededor de las once de la noche.", english: "We will have dinner around 11 pm." },
+    { spanish: "Mis padres van a pedir comida para llevar.", english: "My parents are going to order some takeout." },
+    { spanish: "Este año, vamos a comer pollo asado, ensalada de papa y queque navideño de postre.", english: "This year, we are going to have roasted chicken, potato salad and Christmas cake for dessert." },
+    { spanish: "Vamos a poner los regalos debajo del árbol de Navidad.", english: "We are going to place presents under the Christmas tree." },
+    { spanish: "Después de cenar, abriremos nuestros regalos.", english: "After dinner, we will open our presents." },
+    { spanish: "Daremos un abrazo a todos a las doce de la noche.", english: "We will give everybody a hug at twelve p.m." },
+    { spanish: "Y les desearemos a todos un feliz año nuevo.", english: "And we will wish all a happy new year." },
+    { spanish: "Finalmente, veremos los fuegos artificiales.", english: "Finally, we will watch the fireworks." },
+    { spanish: "Me encanta celebrar la Nochevieja en casa de mis abuelos.", english: "I love celebrating New Year’s Eve at my grandparents." }
   ];
 
   let currentIndex = 0;
 
   const wordBox = document.getElementById("wordBox");
-  const exampleSentence = document.getElementById("exampleSentence");
   const micBtn = document.getElementById("micBtn");
   const feedbackEl = document.getElementById("feedback");
   const nextBtn = document.getElementById("nextBtn");
   
-  // 🔑 FIX: Function to normalize text for reliable comparison
+  // Function to normalize text for reliable comparison
   function normalizeText(text) {
     // 1. Convert to lowercase
     let normalized = text.toLowerCase();
     
     // 2. Remove common punctuation (.,!? etc.)
-    normalized = normalized.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"");
+    // Note: Removed the hyphen from the list to handle "New Year's Eve" more accurately if needed,
+    // but the strict comparison will be against the target English text.
+    normalized = normalized.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,""); 
     
     // 3. Replace multiple spaces with single space and trim
     normalized = normalized.replace(/\s{2,}/g," ").trim();
@@ -123,14 +133,13 @@
     return normalized;
   }
 
-  // Initialize first word
+  // Initialize first phrase
   updateDisplay();
 
-  // Update word and example
+  // Update phrase display (now shows the Spanish text)
   function updateDisplay() {
     const item = items[currentIndex];
-    wordBox.textContent = item.word;
-    exampleSentence.textContent = `Example: "${item.sentence}"`;
+    wordBox.textContent = item.spanish; // Display the Spanish phrase
     feedbackEl.textContent = "";
     nextBtn.style.display = "none";
   }
@@ -140,7 +149,7 @@
   if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     recognition = new SpeechRecognition();
-    recognition.lang = 'en-US';
+    recognition.lang = 'en-US'; // Set recognition language to English (Target)
     recognition.interimResults = false;
     recognition.maxAlternatives = 1;
 
@@ -155,35 +164,42 @@
       const spokenText = event.results[0][0].transcript;
       const normalizedSpoken = normalizeText(spokenText);
       
-      // Get the correct sentence and normalize it
-      const correctSentence = items[currentIndex].sentence;
+      // Get the correct English translation target and normalize it
+      const correctSentence = items[currentIndex].english;
       const normalizedCorrect = normalizeText(correctSentence);
 
-      // 🔑 FIX: Compare the full, normalized sentences
+      // Compare the full, normalized sentences
+      // Use includes for a slightly more forgiving comparison, or strict === for exact match
+      // We will use strict === for a challenging translation match
       const isCorrect = normalizedSpoken === normalizedCorrect;
 
       if (isCorrect) {
-        feedbackEl.textContent = "Very good! 🎉";
+        feedbackEl.textContent = "¡Muy bien! (Very good!) 🎉";
         feedbackEl.style.color = "green";
         nextBtn.style.display = "inline-block";
       } else {
-        feedbackEl.textContent = "Try again! ❌";
+        feedbackEl.textContent = `Inténtalo de nuevo (Try again)! ❌`;
         feedbackEl.style.color = "red";
       }
     };
 
     recognition.onerror = (event) => {
-      feedbackEl.textContent = "Oops! Please try again. 🎤";
+      feedbackEl.textContent = "¡Vaya! Por favor, inténtalo de nuevo. 🎤";
       feedbackEl.style.color = "orange";
     };
   } else {
-    feedbackEl.textContent = "⚠️ Speech recognition not supported. Try Chrome or Edge.";
+    feedbackEl.textContent = "⚠️ El reconocimiento de voz no es compatible. Intenta usar Chrome o Edge.";
     micBtn.style.display = "none";
   }
 
-  // Next button
+  // Next button logic
   nextBtn.addEventListener("click", () => {
-    currentIndex = (currentIndex + 1) % items.length;
+    // Cycle back to the start
+    if (currentIndex < items.length - 1) {
+        currentIndex++;
+    } else {
+        currentIndex = 0; // Loop back to the start
+    }
     updateDisplay();
   });
 </script>
