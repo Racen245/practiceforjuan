@@ -48,7 +48,17 @@
       font-weight: bold;
     }
     #exampleSentence {
-      /* Kept hidden, as per original code */
+      /* STYLED TO SHOW THE HINT/CORRECT ANSWER */
+      font-size: 18px;
+      margin: 15px auto;
+      color: #00796b; /* Dark Teal for visibility */
+      font-style: italic;
+      background: #e0f2f1; /* Very light teal background */
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px dashed #00897b;
+      max-width: 650px; 
+      /* HIDDEN BY DEFAULT: Will be toggled on incorrect answers */
       display: none; 
     }
     #nextBtn {
@@ -76,7 +86,7 @@
 <body>
 
 <div id="container">
-  <div id="instruction">Translate the Spanish phrase below to English:</div>
+  <div id="instruction">Traduce la frase en español a inglés:</div>
   <div id="wordBox"></div>
   <div id="exampleSentence"></div> 
   <div id="micBtn">🎤</div>
@@ -116,15 +126,14 @@
   const micBtn = document.getElementById("micBtn");
   const feedbackEl = document.getElementById("feedback");
   const nextBtn = document.getElementById("nextBtn");
+  const exampleSentenceEl = document.getElementById("exampleSentence"); // Reference to the new hint box
   
   // Function to normalize text for reliable comparison
   function normalizeText(text) {
     // 1. Convert to lowercase
     let normalized = text.toLowerCase();
     
-    // 2. Remove common punctuation (.,!? etc.)
-    // Note: Removed the hyphen from the list to handle "New Year's Eve" more accurately if needed,
-    // but the strict comparison will be against the target English text.
+    // 2. Remove common punctuation
     normalized = normalized.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,""); 
     
     // 3. Replace multiple spaces with single space and trim
@@ -142,6 +151,7 @@
     wordBox.textContent = item.spanish; // Display the Spanish phrase
     feedbackEl.textContent = "";
     nextBtn.style.display = "none";
+    exampleSentenceEl.style.display = "none"; // Hide hint box on new item
   }
 
   // Speech recognition setup
@@ -154,8 +164,9 @@
     recognition.maxAlternatives = 1;
 
     micBtn.addEventListener("click", () => {
-      feedbackEl.textContent = "🎙️ Listening...";
+      feedbackEl.textContent = "🎙️ Escuchando... (Listening...)";
       feedbackEl.style.color = "#333";
+      exampleSentenceEl.style.display = "none"; // Hide hint box when trying again
       recognition.start();
     });
 
@@ -169,17 +180,21 @@
       const normalizedCorrect = normalizeText(correctSentence);
 
       // Compare the full, normalized sentences
-      // Use includes for a slightly more forgiving comparison, or strict === for exact match
-      // We will use strict === for a challenging translation match
       const isCorrect = normalizedSpoken === normalizedCorrect;
 
       if (isCorrect) {
         feedbackEl.textContent = "¡Muy bien! (Very good!) 🎉";
         feedbackEl.style.color = "green";
         nextBtn.style.display = "inline-block";
+        exampleSentenceEl.style.display = "none"; // Ensure hint is hidden on correct answer
       } else {
         feedbackEl.textContent = `Inténtalo de nuevo (Try again)! ❌`;
         feedbackEl.style.color = "red";
+        
+        // --- NEW LOGIC: SHOW CORRECT TRANSLATION ---
+        exampleSentenceEl.textContent = `Traducción correcta: ${correctSentence}`;
+        exampleSentenceEl.style.display = "block"; 
+        // ------------------------------------------
       }
     };
 
