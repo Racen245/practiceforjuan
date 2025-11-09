@@ -1,222 +1,286 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Spanish to English Speaking Practice</title>
-  <style>
-    body {
-      font-family: 'Comic Sans MS', cursive, sans-serif;
-      text-align: center;
-      margin: 0;
-      padding: 20px;
-      background: #c8e6c9; /* Light green background for New Year theme */
-      color: #333;
-    }
-    #container {
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 20px;
-    }
-    #wordBox {
-      /* Adjusted font size for displaying full sentences */
-      font-size: 24px; 
-      padding: 25px;
-      margin: 20px auto;
-      width: 90%;
-      max-width: 650px; /* Wider box for sentences */
-      background: white;
-      border: 4px solid #388e3c; /* Darker green border */
-      border-radius: 15px;
-      box-shadow: 0 6px 12px rgba(0,0,0,0.15);
-      font-weight: bold;
-    }
-    #micBtn {
-      font-size: 60px;
-      cursor: pointer;
-      color: #1976d2; /* Blue microphone */
-      margin: 20px;
-      transition: transform 0.2s;
-    }
-    #micBtn:hover {
-      transform: scale(1.1);
-    }
-    #feedback {
-      font-size: 28px;
-      margin-top: 20px;
-      min-height: 40px;
-      font-weight: bold;
-    }
-    #exampleSentence {
-      /* STYLED TO SHOW THE HINT/CORRECT ANSWER */
-      font-size: 18px;
-      margin: 15px auto;
-      color: #00796b; /* Dark Teal for visibility */
-      font-style: italic;
-      background: #e0f2f1; /* Very light teal background */
-      padding: 10px;
-      border-radius: 8px;
-      border: 1px dashed #00897b;
-      max-width: 650px; 
-      /* HIDDEN BY DEFAULT: Will be toggled on incorrect answers */
-      display: none; 
-    }
-    #nextBtn {
-      margin-top: 20px;
-      padding: 10px 20px;
-      font-size: 18px;
-      background: #4caf50;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      display: none;
-    }
-    #nextBtn:hover {
-      background: #45a049;
-    }
-    #instruction {
-        font-size: 18px;
-        margin-bottom: 10px;
-        color: #00897b; /* Teal color for instruction */
-        font-weight: bold;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speech Assessment Practice</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom font and base styles */
+        body { font-family: 'Inter', sans-serif; background-color: #f7f9fb; }
+        .card { box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 0 10px -5px rgba(0, 0, 0, 0.04); }
+        .status-recording { animation: pulse 1s infinite; }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary': '#4f46e5',
+                        'secondary': '#10b981',
+                        'danger': '#ef4444',
+                    }
+                }
+            }
+        }
+    </script>
 </head>
-<body>
+<body class="p-4 md:p-8 flex justify-center items-start min-h-screen">
 
-<div id="container">
-  <div id="instruction">Traduce la frase en español a inglés:</div>
-  <div id="wordBox"></div>
-  <div id="exampleSentence"></div> 
-  <div id="micBtn">🎤</div>
-  <div id="feedback"></div>
-  <button id="nextBtn">Siguiente Frase →</button>
+<div class="w-full max-w-4xl space-y-8">
+    <header class="text-center">
+        <h1 class="text-4xl font-extrabold text-gray-900">Speech Practice Coach</h1>
+        <p class="mt-2 text-xl text-primary">Practice your script and get instant feedback.</p>
+    </header>
+
+    <!-- Hidden Script Container (Data Source) -->
+    <!-- The content remains here but is not displayed, allowing the JS to pull the reference text. -->
+    <div id="scriptContainer" class="hidden">
+        <textarea id="referenceScript">
+New Year’s plans
+New Year’s Eve is a very special date.
+We are going to visit my grandparents.
+My grandparents’ house is a special place.
+They are going to send invitations to everybody.
+My grandparents’ house will have some beautiful decorations.
+They will use lights to decorate the house, too.
+At their house, we will have some snacks.
+We are going to gather in the living room.
+We are going to play some games and share stories.
+Family games are a lot of fun.
+I am going to make a playlist for New Year’s Eve.
+We will have dinner around 11 pm.
+My parents are going to order some takeout.
+This year, we are going to have roasted chicken, potato salad and Christmas cake for dessert.
+We are going to place presents under the Christmas tree.
+After dinner, we will open our presents.
+We will give everybody a hug at twelve p.m.
+And we will wish all a happy new year.
+Finally, we will watch the fireworks.
+I love celebrating New Year’s Eve at my grandparents’.
+        </textarea>
+    </div>
+    
+    <!-- Visible Challenge Card -->
+    <div class="card bg-white p-6 rounded-xl border border-gray-200 text-center">
+        <h2 class="text-2xl font-semibold text-gray-800">Memorization Challenge Activated</h2>
+        <p class="mt-2 text-lg text-gray-600">The reference script is now hidden. **Please read the "New Year's plans" script from memory!**</p>
+    </div>
+
+
+    <!-- Controls and Status -->
+    <div class="flex flex-col sm:flex-row gap-4">
+        <button id="recordButton"
+                class="flex-1 px-6 py-3 rounded-full text-white font-bold transition duration-150 ease-in-out bg-primary hover:bg-indigo-700 disabled:bg-gray-400">
+            Start Recording
+        </button>
+        <div id="statusDisplay" class="flex-1 px-4 py-3 rounded-xl bg-gray-100 text-center font-medium text-gray-700">
+            Ready. Click "Start Recording" to begin.
+        </div>
+    </div>
+
+    <!-- Results Card -->
+    <div id="resultsCard" class="card bg-white p-6 rounded-xl border border-gray-200 hidden">
+        <h2 class="text-2xl font-semibold mb-4 text-gray-800">Assessment Results</h2>
+        <div id="resultsContent" class="space-y-4">
+            <!-- Results will be injected here -->
+        </div>
+    </div>
 </div>
 
 <script>
-  // New list of Spanish phrases and their exact English translation targets
-  const items = [
-    { spanish: "Planes de Año Nuevo", english: "New Year’s plans" },
-    { spanish: "La Nochevieja / El fin de año es una fecha muy especial.", english: "New Year’s Eve is a very special date." },
-    { spanish: "Vamos a visitar a mis abuelos.", english: "We are going to visit my grandparents." },
-    { spanish: "La casa de mis abuelos es un lugar especial.", english: "My grandparents’ house is a special place." },
-    { spanish: "Van a enviar invitaciones a todos.", english: "They are going to send invitations to everybody." },
-    { spanish: "La casa de mis abuelos tendrá unas decoraciones hermosas.", english: "My grandparents’ house will have some beautiful decorations." },
-    { spanish: "También usarán luces para decorar la casa.", english: "They will use lights to decorate the house, too." },
-    { spanish: "En su casa, tendremos algunos bocadillos / aperitivos.", english: "At their house, we will have some snacks." },
-    { spanish: "Vamos a reunirnos en la sala de estar / el salón.", english: "We are going to gather in the living room." },
-    { spanish: "Vamos a jugar algunos juegos y a compartir historias.", english: "We are going to play some games and share stories." },
-    { spanish: "Los juegos familiares son muy divertidos.", english: "Family games are a lot of fun." },
-    { spanish: "Voy a hacer una lista de reproducción para Nochevieja.", english: "I am going to make a playlist for New Year’s Eve." },
-    { spanish: "Cenaremos alrededor de las once de la noche.", english: "We will have dinner around 11 pm." },
-    { spanish: "Mis padres van a pedir comida para llevar.", english: "My parents are going to order some takeout." },
-    { spanish: "Este año, vamos a comer pollo asado, ensalada de papa y queque navideño de postre.", english: "This year, we are going to have roasted chicken, potato salad and Christmas cake for dessert." },
-    { spanish: "Vamos a poner los regalos debajo del árbol de Navidad.", english: "We are going to place presents under the Christmas tree." },
-    { spanish: "Después de cenar, abriremos nuestros regalos.", english: "After dinner, we will open our presents." },
-    { spanish: "Daremos un abrazo a todos a las doce de la noche.", english: "We will give everybody a hug at twelve p.m." },
-    { spanish: "Y les desearemos a todos un feliz año nuevo.", english: "And we will wish all a happy new year." },
-    { spanish: "Finalmente, veremos los fuegos artificiales.", english: "Finally, we will watch the fireworks." },
-    { spanish: "Me encanta celebrar la Nochevieja en casa de mis abuelos.", english: "I love celebrating New Year’s Eve at my grandparents." }
-  ];
-
-  let currentIndex = 0;
-
-  const wordBox = document.getElementById("wordBox");
-  const micBtn = document.getElementById("micBtn");
-  const feedbackEl = document.getElementById("feedback");
-  const nextBtn = document.getElementById("nextBtn");
-  const exampleSentenceEl = document.getElementById("exampleSentence"); 
-  
-  // Function to normalize text for reliable comparison
-  function normalizeText(text) {
-    // 1. Convert to lowercase
-    let normalized = text.toLowerCase();
-    
-    // 2. Remove common punctuation
-    normalized = normalized.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,""); 
-    
-    // 3. Replace multiple spaces with single space and trim
-    normalized = normalized.replace(/\s{2,}/g," ").trim();
-    
-    return normalized;
-  }
-
-  // Initialize first phrase
-  updateDisplay();
-
-  // Update phrase display (now shows the Spanish text)
-  function updateDisplay() {
-    const item = items[currentIndex];
-    wordBox.textContent = item.spanish; // Display the Spanish phrase
-    feedbackEl.textContent = "";
-    nextBtn.style.display = "none";
-    exampleSentenceEl.style.display = "none"; // Hide hint box on new item
-  }
-
-  // Speech recognition setup
-  let recognition;
-  if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+    // Check for Web Speech API support
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    recognition = new SpeechRecognition();
-    recognition.lang = 'en-US'; // Set recognition language to English (Target)
-    recognition.interimResults = false;
-    recognition.maxAlternatives = 1;
 
-    micBtn.addEventListener("click", () => {
-      feedbackEl.textContent = "🎙️ Escuchando... (Listening...)";
-      feedbackEl.style.color = "#333";
-      // IMPORTANT: DO NOT HIDE exampleSentenceEl here. It remains visible until correct.
-      recognition.start();
-    });
-
-    recognition.onresult = (event) => {
-      // Get the spoken text and normalize it
-      const spokenText = event.results[0][0].transcript;
-      const normalizedSpoken = normalizeText(spokenText);
-      
-      // Get the correct English translation target and normalize it
-      const correctSentence = items[currentIndex].english;
-      const normalizedCorrect = normalizeText(correctSentence);
-
-      // Compare the full, normalized sentences
-      const isCorrect = normalizedSpoken === normalizedCorrect;
-
-      if (isCorrect) {
-        feedbackEl.textContent = "¡Muy bien! (Very good!) 🎉";
-        feedbackEl.style.color = "green";
-        nextBtn.style.display = "inline-block";
-        exampleSentenceEl.style.display = "none"; // HIDE hint on correct answer
-      } else {
-        feedbackEl.textContent = `Inténtalo de nuevo (Try again)! ❌`;
-        feedbackEl.style.color = "red";
-        
-        // --- LOGIC: SHOW CORRECT TRANSLATION AND KEEP IT VISIBLE ---
-        exampleSentenceEl.textContent = `Traducción correcta: ${correctSentence}`;
-        exampleSentenceEl.style.display = "block"; // SHOW hint on incorrect answer
-        // ------------------------------------------
-      }
-    };
-
-    recognition.onerror = (event) => {
-      feedbackEl.textContent = "¡Vaya! Por favor, inténtalo de nuevo. 🎤";
-      feedbackEl.style.color = "orange";
-    };
-  } else {
-    feedbackEl.textContent = "⚠️ El reconocimiento de voz no es compatible. Intenta usar Chrome o Edge.";
-    micBtn.style.display = "none";
-  }
-
-  // Next button logic
-  nextBtn.addEventListener("click", () => {
-    // Cycle back to the start
-    if (currentIndex < items.length - 1) {
-        currentIndex++;
-    } else {
-        currentIndex = 0; // Loop back to the start
+    if (!SpeechRecognition) {
+        document.getElementById('statusDisplay').textContent = "Browser Error: Web Speech API not supported. Please use Chrome or Edge for this application.";
+        document.getElementById('recordButton').disabled = true;
     }
-    updateDisplay();
-  });
+
+    const recognition = SpeechRecognition ? new SpeechRecognition() : null;
+    let isRecording = false;
+    let startTime;
+    let finalTranscript = ''; // Stores the full spoken text when recognition is continuous
+
+    const recordButton = document.getElementById('recordButton');
+    const statusDisplay = document.getElementById('statusDisplay');
+    const referenceScriptElement = document.getElementById('referenceScript');
+    const resultsCard = document.getElementById('resultsCard');
+    const resultsContent = document.getElementById('resultsContent');
+
+    if (recognition) {
+        // Set to true to keep the microphone open until recognition.stop() is called by the user.
+        recognition.continuous = true; 
+        recognition.interimResults = false;
+        recognition.lang = 'en-US';
+
+        recognition.onstart = () => {
+            isRecording = true;
+            startTime = performance.now();
+            finalTranscript = ''; // Reset transcript for new session
+            recordButton.textContent = 'Stop Recording (Listening...)';
+            recordButton.classList.remove('bg-primary', 'hover:bg-indigo-700');
+            recordButton.classList.add('bg-danger', 'hover:bg-red-700', 'status-recording');
+            statusDisplay.textContent = 'Listening... Click "Stop Recording" when you are finished.';
+        };
+
+        recognition.onresult = (event) => {
+            // Accumulate all final recognized text chunks
+            for (let i = event.resultIndex; i < event.results.length; ++i) {
+                if (event.results[i].isFinal) {
+                    finalTranscript += event.results[i][0].transcript + ' ';
+                }
+            }
+            // Note: Since continuous is true, we only process the results when the user manually stops.
+        };
+
+        recognition.onerror = (event) => {
+            console.error('Speech recognition error:', event.error);
+            isRecording = false;
+            recordButton.textContent = 'Start Recording';
+            recordButton.classList.remove('bg-danger', 'hover:bg-red-700', 'status-recording');
+            recordButton.classList.add('bg-primary', 'hover:bg-indigo-700');
+            statusDisplay.textContent = `Error: ${event.error}. Please try again.`;
+            // Must manually stop on error
+            recognition.stop();
+        };
+        
+        recognition.onend = () => {
+            // This event fires when recognition.stop() is called (manually by user) or times out.
+            // We rely on the onclick handler to perform the results processing and UI update.
+            isRecording = false;
+        };
+
+        recordButton.onclick = () => {
+            if (isRecording) {
+                // STOPPING: User clicked the button to stop the recording.
+                recognition.stop();
+                
+                const endTime = performance.now();
+                const durationSeconds = (endTime - startTime) / 1000;
+
+                // Process results using the accumulated transcript
+                processResults(finalTranscript.trim(), durationSeconds);
+                
+                // Final UI reset
+                recordButton.textContent = 'Start Recording';
+                recordButton.classList.remove('bg-danger', 'hover:bg-red-700', 'status-recording');
+                recordButton.classList.add('bg-primary', 'hover:bg-indigo-700');
+                statusDisplay.textContent = 'Processing completed. Check results below.';
+
+            } else {
+                // STARTING
+                // Clear previous results
+                resultsCard.classList.add('hidden');
+                resultsContent.innerHTML = '';
+                // Start recording
+                recognition.start();
+            }
+        };
+    }
+
+    /**
+     * Scores the spoken text against the reference script.
+     * Note: This is a simplified comparison (Word Accuracy) and is not true
+     * phoneme-level pronunciation scoring like cloud AI services provide.
+     * @param {string} spokenText - The transcribed text from the user.
+     * @param {number} durationSeconds - The time taken to speak.
+     */
+    function processResults(spokenText, durationSeconds) {
+        resultsCard.classList.remove('hidden');
+        resultsContent.innerHTML = '';
+
+        const referenceText = referenceScriptElement.value.toLowerCase().replace(/[^a-z0-9\s]/g, '').trim();
+        const spoken = spokenText.toLowerCase().replace(/[^a-z0-9\s]/g, '').trim();
+
+        const refWords = referenceText.split(/\s+/).filter(w => w.length > 0);
+        const spokenWords = spoken.split(/\s+/).filter(w => w.length > 0);
+
+        if (refWords.length === 0) {
+            resultsContent.innerHTML = `
+                <p class="text-lg text-danger font-semibold">Error: Reference script is empty.</p>
+                <p class="text-base text-gray-600">Please provide a script to read and try again.</p>
+            `;
+            return;
+        }
+
+        // 1. Content and Accuracy Score (Simplified Word Accuracy)
+        let correctWords = 0;
+        let feedbackHTML = '<div class="space-y-1"><p class="text-sm font-medium text-gray-700">Word-by-Word Feedback:</p>';
+        const maxWords = Math.max(refWords.length, spokenWords.length);
+
+        for (let i = 0; i < maxWords; i++) {
+            const refWord = refWords[i];
+            const spokenWord = spokenWords[i];
+
+            if (refWord && spokenWord && refWord === spokenWord) {
+                correctWords++;
+                feedbackHTML += `<span class="bg-secondary/20 text-secondary text-xs px-2 py-0.5 rounded-full mr-1">${refWord} (Correct)</span>`;
+            } else if (refWord && spokenWord) {
+                // Mispronunciation or Substitution (simplified to Mismatch)
+                feedbackHTML += `<span class="bg-yellow-100 text-yellow-800 text-xs px-2 py-0.5 rounded-full mr-1 cursor-help" title="Expected: ${refWord}, Heard: ${spokenWord}">${spokenWord} (Mismatch)</span>`;
+            } else if (refWord) {
+                // Deletion (missed word)
+                feedbackHTML += `<span class="bg-danger/20 text-danger text-xs px-2 py-0.5 rounded-full mr-1">***${refWord}*** (Missed)</span>`;
+            } else if (spokenWord) {
+                // Insertion (extra word)
+                feedbackHTML += `<span class="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded-full mr-1">${spokenWord} (Extra Word)</span>`;
+            }
+        }
+        feedbackHTML += '</div>';
+
+        const accuracyPercentage = (correctWords / refWords.length) * 100;
+        const accuracyColor = accuracyPercentage >= 90 ? 'text-secondary' : accuracyPercentage >= 70 ? 'text-yellow-600' : 'text-danger';
+
+        // 2. Fluency Score (Words Per Minute)
+        const totalSpokenWords = spokenWords.length;
+        const wpm = durationSeconds > 0 ? Math.round((totalSpokenWords / durationSeconds) * 60) : 0;
+        const fluencyRating = wpm < 80 ? 'Too Slow' : wpm > 180 ? 'Too Fast' : 'Good Pace';
+        const fluencyColor = fluencyRating === 'Good Pace' ? 'text-secondary' : 'text-yellow-600';
+
+        // 3. Final Render
+        resultsContent.innerHTML = `
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+                <div class="p-4 rounded-lg bg-gray-50 border">
+                    <p class="text-sm font-medium text-gray-500">Content Accuracy</p>
+                    <p class="text-3xl font-extrabold mt-1 ${accuracyColor}">${accuracyPercentage.toFixed(1)}%</p>
+                </div>
+                <div class="p-4 rounded-lg bg-gray-50 border">
+                    <p class="text-sm font-medium text-gray-500">Fluency (WPM)</p>
+                    <p class="text-3xl font-extrabold mt-1 ${fluencyColor}">${wpm}</p>
+                    <p class="text-xs text-gray-500">${fluencyRating}</p>
+                </div>
+                <div class="p-4 rounded-lg bg-gray-50 border">
+                    <p class="text-sm font-medium text-gray-500">Spoken Words</p>
+                    <p class="text-3xl font-extrabold mt-1 text-gray-700">${totalSpokenWords}</p>
+                    <p class="text-xs text-gray-500">Reference: ${refWords.length}</p>
+                </div>
+            </div>
+
+            <div class="mt-6">
+                <h3 class="text-xl font-semibold mb-2 text-gray-800">Your Transcript:</h3>
+                <p class="p-3 bg-indigo-50 border-l-4 border-primary rounded text-gray-700 font-mono">${spokenText || "No audible speech was recognized."}</p>
+            </div>
+
+            <div class="mt-6">
+                <h3 class="text-xl font-semibold mb-3 text-gray-800">Detailed Feedback:</h3>
+                <div class="p-4 bg-gray-100 rounded-lg">
+                    ${feedbackHTML}
+                </div>
+                <p class="text-xs text-gray-500 mt-2">
+                    <span class="text-secondary">Green</span> = Correct Word, 
+                    <span class="text-yellow-800">Yellow</span> = Mismatch/Potential Mispronunciation, 
+                    <span class="text-danger">Red</span> = Missed Word, 
+                    <span class="text-blue-800">Blue</span> = Extra Word.
+                </p>
+            </div>
+        `;
+    }
 </script>
 
 </body>
