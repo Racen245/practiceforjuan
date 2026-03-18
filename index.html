@@ -2,286 +2,173 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Speech Assessment Practice</title>
-    <!-- Load Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Brick Builder Workspace</title>
     <style>
-        /* Custom font and base styles */
-        body { font-family: 'Inter', sans-serif; background-color: #f7f9fb; }
-        .card { box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 0 10px -5px rgba(0, 0, 0, 0.04); }
-        .status-recording { animation: pulse 1s infinite; }
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
+        body { margin: 0; overflow: hidden; background-color: #f0f0f0; font-family: sans-serif; touch-action: none; }
+        canvas { display: block; background-image: 
+            linear-gradient(to right, #e0e0e0 1px, transparent 1px),
+            linear-gradient(to bottom, #e0e0e0 1px, transparent 1px);
+            background-size: 20px 20px; background-color: white; }
+        .ui-layer { position: absolute; top: 10px; width: 100%; display: flex; justify-content: center; pointer-events: none; }
+        .btn { background: #d40000; color: white; border: none; padding: 8px 15px; border-radius: 5px; 
+               font-size: 12px; cursor: pointer; pointer-events: auto; box-shadow: 0 2px 5px rgba(0,0,0,0.2); font-weight: bold; }
+        .info { position: absolute; bottom: 10px; left: 10px; font-size: 10px; color: #666; pointer-events: none; }
     </style>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'primary': '#4f46e5',
-                        'secondary': '#10b981',
-                        'danger': '#ef4444',
-                    }
-                }
-            }
-        }
-    </script>
 </head>
-<body class="p-4 md:p-8 flex justify-center items-start min-h-screen">
+<body>
 
-<div class="w-full max-w-4xl space-y-8">
-    <header class="text-center">
-        <h1 class="text-4xl font-extrabold text-gray-900">Speech Practice Coach</h1>
-        <p class="mt-2 text-xl text-primary">Practice your script and get instant feedback.</p>
-    </header>
-
-    <!-- Hidden Script Container (Data Source) -->
-    <!-- The content remains here but is not displayed, allowing the JS to pull the reference text. -->
-    <div id="scriptContainer" class="hidden">
-        <textarea id="referenceScript">
-New Year’s plans
-New Year’s Eve is a very special date.
-We are going to visit my grandparents.
-My grandparents’ house is a special place.
-They are going to send invitations to everybody.
-My grandparents’ house will have some beautiful decorations.
-They will use lights to decorate the house, too.
-At their house, we will have some snacks.
-We are going to gather in the living room.
-We are going to play some games and share stories.
-Family games are a lot of fun.
-I am going to make a playlist for New Year’s Eve.
-We will have dinner around 11 pm.
-My parents are going to order some takeout.
-This year, we are going to have roasted chicken, potato salad and Christmas cake for dessert.
-We are going to place presents under the Christmas tree.
-After dinner, we will open our presents.
-We will give everybody a hug at twelve p.m.
-And we will wish all a happy new year.
-Finally, we will watch the fireworks.
-I love celebrating New Year’s Eve at my grandparents’.
-        </textarea>
-    </div>
-    
-    <!-- Visible Challenge Card -->
-    <div class="card bg-white p-6 rounded-xl border border-gray-200 text-center">
-        <h2 class="text-2xl font-semibold text-gray-800">Memorization Challenge Activated</h2>
-        <p class="mt-2 text-lg text-gray-600">The reference script is now hidden. **Please read the "New Year's plans" script from memory!**</p>
-    </div>
-
-
-    <!-- Controls and Status -->
-    <div class="flex flex-col sm:flex-row gap-4">
-        <button id="recordButton"
-                class="flex-1 px-6 py-3 rounded-full text-white font-bold transition duration-150 ease-in-out bg-primary hover:bg-indigo-700 disabled:bg-gray-400">
-            Start Recording
-        </button>
-        <div id="statusDisplay" class="flex-1 px-4 py-3 rounded-xl bg-gray-100 text-center font-medium text-gray-700">
-            Ready. Click "Start Recording" to begin.
-        </div>
-    </div>
-
-    <!-- Results Card -->
-    <div id="resultsCard" class="card bg-white p-6 rounded-xl border border-gray-200 hidden">
-        <h2 class="text-2xl font-semibold mb-4 text-gray-800">Assessment Results</h2>
-        <div id="resultsContent" class="space-y-4">
-            <!-- Results will be injected here -->
-        </div>
-    </div>
+<div class="ui-layer">
+    <button class="btn" onclick="resetPieces()">Reset Bricks</button>
 </div>
 
+<div class="info">Drag to move • Double-tap/click to rotate (90°)</div>
+<canvas id="canvas"></canvas>
+
 <script>
-    // Check for Web Speech API support
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
 
-    if (!SpeechRecognition) {
-        document.getElementById('statusDisplay').textContent = "Browser Error: Web Speech API not supported. Please use Chrome or Edge for this application.";
-        document.getElementById('recordButton').disabled = true;
+function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+resize();
+
+const s = Math.min(canvas.width, canvas.height) / 14; 
+
+let shapes = [];
+let draggingShape = null;
+let offsetX, offsetY;
+let lastTap = 0;
+
+class Brick {
+    constructor(w, h, color, x, y, hasEye = false) {
+        this.w = w * s;
+        this.h = h * s;
+        this.color = color;
+        this.startX = x;
+        this.startY = y;
+        this.x = x;
+        this.y = y;
+        this.rotation = 0;
+        this.hasEye = hasEye;
     }
 
-    const recognition = SpeechRecognition ? new SpeechRecognition() : null;
-    let isRecording = false;
-    let startTime;
-    let finalTranscript = ''; // Stores the full spoken text when recognition is continuous
-
-    const recordButton = document.getElementById('recordButton');
-    const statusDisplay = document.getElementById('statusDisplay');
-    const referenceScriptElement = document.getElementById('referenceScript');
-    const resultsCard = document.getElementById('resultsCard');
-    const resultsContent = document.getElementById('resultsContent');
-
-    if (recognition) {
-        // Set to true to keep the microphone open until recognition.stop() is called by the user.
-        recognition.continuous = true; 
-        recognition.interimResults = false;
-        recognition.lang = 'en-US';
-
-        recognition.onstart = () => {
-            isRecording = true;
-            startTime = performance.now();
-            finalTranscript = ''; // Reset transcript for new session
-            recordButton.textContent = 'Stop Recording (Listening...)';
-            recordButton.classList.remove('bg-primary', 'hover:bg-indigo-700');
-            recordButton.classList.add('bg-danger', 'hover:bg-red-700', 'status-recording');
-            statusDisplay.textContent = 'Listening... Click "Stop Recording" when you are finished.';
-        };
-
-        recognition.onresult = (event) => {
-            // Accumulate all final recognized text chunks
-            for (let i = event.resultIndex; i < event.results.length; ++i) {
-                if (event.results[i].isFinal) {
-                    finalTranscript += event.results[i][0].transcript + ' ';
-                }
-            }
-            // Note: Since continuous is true, we only process the results when the user manually stops.
-        };
-
-        recognition.onerror = (event) => {
-            console.error('Speech recognition error:', event.error);
-            isRecording = false;
-            recordButton.textContent = 'Start Recording';
-            recordButton.classList.remove('bg-danger', 'hover:bg-red-700', 'status-recording');
-            recordButton.classList.add('bg-primary', 'hover:bg-indigo-700');
-            statusDisplay.textContent = `Error: ${event.error}. Please try again.`;
-            // Must manually stop on error
-            recognition.stop();
-        };
+    draw() {
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.rotate(this.rotation * Math.PI / 180);
         
-        recognition.onend = () => {
-            // This event fires when recognition.stop() is called (manually by user) or times out.
-            // We rely on the onclick handler to perform the results processing and UI update.
-            isRecording = false;
-        };
+        ctx.fillStyle = this.color;
+        ctx.strokeStyle = '#000';
+        ctx.lineWidth = 3;
+        ctx.fillRect(-this.w/2, -this.h/2, this.w, this.h);
+        ctx.strokeRect(-this.w/2, -this.h/2, this.w, this.h);
 
-        recordButton.onclick = () => {
-            if (isRecording) {
-                // STOPPING: User clicked the button to stop the recording.
-                recognition.stop();
-                
-                const endTime = performance.now();
-                const durationSeconds = (endTime - startTime) / 1000;
+        if (this.hasEye) {
+            const eyeSize = Math.min(this.w, this.h) * 0.35;
+            ctx.fillStyle = "white";
+            ctx.beginPath();
+            ctx.arc(0, 0, eyeSize, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+            
+            ctx.fillStyle = "black";
+            ctx.beginPath();
+            ctx.arc(eyeSize * 0.3, 0, eyeSize * 0.5, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        ctx.restore();
+    }
 
-                // Process results using the accumulated transcript
-                processResults(finalTranscript.trim(), durationSeconds);
-                
-                // Final UI reset
-                recordButton.textContent = 'Start Recording';
-                recordButton.classList.remove('bg-danger', 'hover:bg-red-700', 'status-recording');
-                recordButton.classList.add('bg-primary', 'hover:bg-indigo-700');
-                statusDisplay.textContent = 'Processing completed. Check results below.';
+    isPointInside(px, py) {
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.rotate(this.rotation * Math.PI / 180);
+        ctx.beginPath();
+        ctx.rect(-this.w/2, -this.h/2, this.w, this.h);
+        const result = ctx.isPointInPath(px, py);
+        ctx.restore();
+        return result;
+    }
+}
 
+function initShapes() {
+    const W = canvas.width;
+    const H = canvas.height;
+    
+    shapes = [
+        // LEFT MARGIN: Red Plate and TWO Yellow 2x2 Bricks
+        new Brick(0.5, 2, '#d40000', s*2, H*0.25), 
+        new Brick(1, 1, '#ffed00', s*2, H*0.55),    
+        new Brick(1, 1, '#ffed00', s*2, H*0.85),    
+
+        // TOP MARGIN: Yellow 2x4
+        new Brick(1, 2, '#ffed00', W*0.5, s*2),    
+
+        // RIGHT MARGIN: Red Plate and ONE Eye Brick
+        new Brick(0.5, 2, '#d40000', W-s*2, H*0.3),
+        new Brick(1, 1, '#ffed00', W-s*2, H*0.7, true) 
+    ];
+}
+
+function resetPieces() {
+    shapes.forEach(shape => {
+        shape.x = shape.startX;
+        shape.y = shape.startY;
+        shape.rotation = 0;
+    });
+    drawAll();
+}
+
+function handleStart(e) {
+    const touch = e.touches ? e.touches[0] : e;
+    const now = Date.now();
+    
+    for (let i = shapes.length - 1; i >= 0; i--) {
+        if (shapes[i].isPointInside(touch.clientX, touch.clientY)) {
+            // Double-click to rotate
+            if (now - lastTap < 300) {
+                shapes[i].rotation += 90;
+                draggingShape = null;
             } else {
-                // STARTING
-                // Clear previous results
-                resultsCard.classList.add('hidden');
-                resultsContent.innerHTML = '';
-                // Start recording
-                recognition.start();
+                draggingShape = shapes[i];
+                offsetX = touch.clientX - draggingShape.x;
+                offsetY = touch.clientY - draggingShape.y;
+                shapes.push(shapes.splice(i, 1)[0]);
             }
-        };
-    }
-
-    /**
-     * Scores the spoken text against the reference script.
-     * Note: This is a simplified comparison (Word Accuracy) and is not true
-     * phoneme-level pronunciation scoring like cloud AI services provide.
-     * @param {string} spokenText - The transcribed text from the user.
-     * @param {number} durationSeconds - The time taken to speak.
-     */
-    function processResults(spokenText, durationSeconds) {
-        resultsCard.classList.remove('hidden');
-        resultsContent.innerHTML = '';
-
-        const referenceText = referenceScriptElement.value.toLowerCase().replace(/[^a-z0-9\s]/g, '').trim();
-        const spoken = spokenText.toLowerCase().replace(/[^a-z0-9\s]/g, '').trim();
-
-        const refWords = referenceText.split(/\s+/).filter(w => w.length > 0);
-        const spokenWords = spoken.split(/\s+/).filter(w => w.length > 0);
-
-        if (refWords.length === 0) {
-            resultsContent.innerHTML = `
-                <p class="text-lg text-danger font-semibold">Error: Reference script is empty.</p>
-                <p class="text-base text-gray-600">Please provide a script to read and try again.</p>
-            `;
-            return;
+            lastTap = now;
+            drawAll();
+            break;
         }
-
-        // 1. Content and Accuracy Score (Simplified Word Accuracy)
-        let correctWords = 0;
-        let feedbackHTML = '<div class="space-y-1"><p class="text-sm font-medium text-gray-700">Word-by-Word Feedback:</p>';
-        const maxWords = Math.max(refWords.length, spokenWords.length);
-
-        for (let i = 0; i < maxWords; i++) {
-            const refWord = refWords[i];
-            const spokenWord = spokenWords[i];
-
-            if (refWord && spokenWord && refWord === spokenWord) {
-                correctWords++;
-                feedbackHTML += `<span class="bg-secondary/20 text-secondary text-xs px-2 py-0.5 rounded-full mr-1">${refWord} (Correct)</span>`;
-            } else if (refWord && spokenWord) {
-                // Mispronunciation or Substitution (simplified to Mismatch)
-                feedbackHTML += `<span class="bg-yellow-100 text-yellow-800 text-xs px-2 py-0.5 rounded-full mr-1 cursor-help" title="Expected: ${refWord}, Heard: ${spokenWord}">${spokenWord} (Mismatch)</span>`;
-            } else if (refWord) {
-                // Deletion (missed word)
-                feedbackHTML += `<span class="bg-danger/20 text-danger text-xs px-2 py-0.5 rounded-full mr-1">***${refWord}*** (Missed)</span>`;
-            } else if (spokenWord) {
-                // Insertion (extra word)
-                feedbackHTML += `<span class="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded-full mr-1">${spokenWord} (Extra Word)</span>`;
-            }
-        }
-        feedbackHTML += '</div>';
-
-        const accuracyPercentage = (correctWords / refWords.length) * 100;
-        const accuracyColor = accuracyPercentage >= 90 ? 'text-secondary' : accuracyPercentage >= 70 ? 'text-yellow-600' : 'text-danger';
-
-        // 2. Fluency Score (Words Per Minute)
-        const totalSpokenWords = spokenWords.length;
-        const wpm = durationSeconds > 0 ? Math.round((totalSpokenWords / durationSeconds) * 60) : 0;
-        const fluencyRating = wpm < 80 ? 'Too Slow' : wpm > 180 ? 'Too Fast' : 'Good Pace';
-        const fluencyColor = fluencyRating === 'Good Pace' ? 'text-secondary' : 'text-yellow-600';
-
-        // 3. Final Render
-        resultsContent.innerHTML = `
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
-                <div class="p-4 rounded-lg bg-gray-50 border">
-                    <p class="text-sm font-medium text-gray-500">Content Accuracy</p>
-                    <p class="text-3xl font-extrabold mt-1 ${accuracyColor}">${accuracyPercentage.toFixed(1)}%</p>
-                </div>
-                <div class="p-4 rounded-lg bg-gray-50 border">
-                    <p class="text-sm font-medium text-gray-500">Fluency (WPM)</p>
-                    <p class="text-3xl font-extrabold mt-1 ${fluencyColor}">${wpm}</p>
-                    <p class="text-xs text-gray-500">${fluencyRating}</p>
-                </div>
-                <div class="p-4 rounded-lg bg-gray-50 border">
-                    <p class="text-sm font-medium text-gray-500">Spoken Words</p>
-                    <p class="text-3xl font-extrabold mt-1 text-gray-700">${totalSpokenWords}</p>
-                    <p class="text-xs text-gray-500">Reference: ${refWords.length}</p>
-                </div>
-            </div>
-
-            <div class="mt-6">
-                <h3 class="text-xl font-semibold mb-2 text-gray-800">Your Transcript:</h3>
-                <p class="p-3 bg-indigo-50 border-l-4 border-primary rounded text-gray-700 font-mono">${spokenText || "No audible speech was recognized."}</p>
-            </div>
-
-            <div class="mt-6">
-                <h3 class="text-xl font-semibold mb-3 text-gray-800">Detailed Feedback:</h3>
-                <div class="p-4 bg-gray-100 rounded-lg">
-                    ${feedbackHTML}
-                </div>
-                <p class="text-xs text-gray-500 mt-2">
-                    <span class="text-secondary">Green</span> = Correct Word, 
-                    <span class="text-yellow-800">Yellow</span> = Mismatch/Potential Mispronunciation, 
-                    <span class="text-danger">Red</span> = Missed Word, 
-                    <span class="text-blue-800">Blue</span> = Extra Word.
-                </p>
-            </div>
-        `;
     }
+}
+
+function handleMove(e) {
+    if (draggingShape) {
+        const touch = e.touches ? e.touches[0] : e;
+        draggingShape.x = touch.clientX - offsetX;
+        draggingShape.y = touch.clientY - offsetY;
+        drawAll();
+    }
+}
+
+function drawAll() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    shapes.forEach(s => s.draw());
+}
+
+canvas.addEventListener('touchstart', e => { e.preventDefault(); handleStart(e); }, {passive: false});
+window.addEventListener('touchmove', e => { e.preventDefault(); handleMove(e); }, {passive: false});
+window.addEventListener('touchend', () => draggingShape = null);
+canvas.addEventListener('mousedown', handleStart);
+window.addEventListener('mousemove', handleMove);
+window.addEventListener('mouseup', () => draggingShape = null);
+window.addEventListener('resize', () => { resize(); drawAll(); });
+
+initShapes();
+drawAll();
 </script>
-
 </body>
 </html>
