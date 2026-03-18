@@ -9,11 +9,11 @@
         canvas { display: block; background-image: 
             linear-gradient(to right, #e0e0e0 1px, transparent 1px),
             linear-gradient(to bottom, #e0e0e0 1px, transparent 1px);
-            background-size: 20px 20px; background-color: white; }
+            background-size: 40px 40px; background-color: white; }
         .ui-layer { position: absolute; top: 10px; width: 100%; display: flex; justify-content: center; pointer-events: none; }
-        .btn { background: #d40000; color: white; border: none; padding: 8px 15px; border-radius: 5px; 
-               font-size: 12px; cursor: pointer; pointer-events: auto; box-shadow: 0 2px 5px rgba(0,0,0,0.2); font-weight: bold; }
-        .info { position: absolute; bottom: 10px; left: 10px; font-size: 10px; color: #666; pointer-events: none; }
+        .btn { background: #d40000; color: white; border: none; padding: 10px 20px; border-radius: 5px; 
+               font-size: 14px; cursor: pointer; pointer-events: auto; box-shadow: 0 2px 5px rgba(0,0,0,0.2); font-weight: bold; }
+        .info { position: absolute; bottom: 10px; left: 10px; font-size: 12px; color: #666; pointer-events: none; }
     </style>
 </head>
 <body>
@@ -35,7 +35,8 @@ function resize() {
 }
 resize();
 
-const s = Math.min(canvas.width, canvas.height) / 14; 
+// Scale doubled: changed divisor from 14 to 7
+const s = Math.min(canvas.width, canvas.height) / 7; 
 
 let shapes = [];
 let draggingShape = null;
@@ -62,7 +63,7 @@ class Brick {
         
         ctx.fillStyle = this.color;
         ctx.strokeStyle = '#000';
-        ctx.lineWidth = 3;
+        ctx.lineWidth = 4;
         ctx.fillRect(-this.w/2, -this.h/2, this.w, this.h);
         ctx.strokeRect(-this.w/2, -this.h/2, this.w, this.h);
 
@@ -99,17 +100,17 @@ function initShapes() {
     const H = canvas.height;
     
     shapes = [
-        // LEFT MARGIN: Red Plate and TWO Yellow 2x2 Bricks
-        new Brick(0.5, 2, '#d40000', s*2, H*0.25), 
-        new Brick(1, 1, '#ffed00', s*2, H*0.55),    
-        new Brick(1, 1, '#ffed00', s*2, H*0.85),    
+        // Left: Red Plate and TWO Yellow 2x2 Bricks
+        new Brick(0.5, 2, '#d40000', s*1.5, H*0.25), 
+        new Brick(1, 1, '#ffed00', s*1.5, H*0.55),    
+        new Brick(1, 1, '#ffed00', s*1.5, H*0.85),    
 
-        // TOP MARGIN: Yellow 2x4
-        new Brick(1, 2, '#ffed00', W*0.5, s*2),    
+        // Top: Yellow 2x4 Brick
+        new Brick(1, 2, '#ffed00', W*0.5, s*1.5),    
 
-        // RIGHT MARGIN: Red Plate and ONE Eye Brick
-        new Brick(0.5, 2, '#d40000', W-s*2, H*0.3),
-        new Brick(1, 1, '#ffed00', W-s*2, H*0.7, true) 
+        // Right: Red Plate and ONE Eye Brick
+        new Brick(0.5, 2, '#d40000', W-s*1.5, H*0.3),
+        new Brick(1, 1, '#ffed00', W-s*1.5, H*0.7, true) 
     ];
 }
 
@@ -128,7 +129,6 @@ function handleStart(e) {
     
     for (let i = shapes.length - 1; i >= 0; i--) {
         if (shapes[i].isPointInside(touch.clientX, touch.clientY)) {
-            // Double-click to rotate
             if (now - lastTap < 300) {
                 shapes[i].rotation += 90;
                 draggingShape = null;
