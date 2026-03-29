@@ -129,10 +129,15 @@ function initShapes() {
     const H = canvas.height;
     
     shapes = [
+        // Left column
         new Brick(0.5, 2, '#d40000', s*1.5, H*0.25), 
         new Brick(1, 1, '#ffed00', s*1.5, H*0.55),    
         new Brick(1, 1, '#ffed00', s*1.5, H*0.85),    
-        new Brick(1, 2, '#ffed00', W*0.5, s*1.5),    
+
+        // Center: Moved further down to be under the Reset button (s*3.5 instead of s*1.5)
+        new Brick(1, 2, '#ffed00', W*0.5, s*3.5),    
+
+        // Right column
         new Brick(0.5, 2, '#d40000', W-s*1.5, H*0.3),
         new Brick(1, 1, '#ffed00', W-s*1.5, H*0.7, true) 
     ];
